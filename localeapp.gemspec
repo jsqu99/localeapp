@@ -26,6 +26,7 @@ Gem::Specification.new do |s|
   s.add_dependency('rack')
   s.add_dependency('ya2yaml')
   s.add_dependency('gli')
+  s.add_runtime_dependency('lc_alchemy_cms')
 
   s.add_development_dependency('rake')
   s.add_development_dependency('rspec', '~> 2.14.1')

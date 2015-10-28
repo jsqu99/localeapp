@@ -1,4 +1,22 @@
 require 'fileutils'
+require 'alchemy_cms'
+
+###############
+=begin
+new_data
+{
+    "en" => {
+        "foo" => {
+            "bar" => {
+                "jeff" => "hi jeff"
+            }
+        }
+    }
+}
+
+locales = new_data.keys
+
+=end
 
 module Localeapp
   class Updater
@@ -12,9 +30,14 @@ module Localeapp
           if data['translations'] && data['translations'][short_code]
             new_data = { short_code => data['translations'][short_code] }
             translations.deep_merge!(new_data)
+
+            # only send new info to Alchemy
+            Alchemy::Translations::EssenceBodyUpdater.new.update_bodies(new_data)
           end
         else
           translations = { short_code => data['translations'][short_code] }
+          # send all info to Alchemy as this is a new locale
+          Alchemy::Translations::EssenceBodyUpdater.new.update_bodies(translations)
         end
 
         if data['deleted']

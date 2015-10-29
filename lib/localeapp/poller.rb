@@ -5,7 +5,7 @@ require 'time'
 module Localeapp
   class Poller
     include ::Localeapp::ApiCall
-    
+
     # when we last asked the service for updates
     attr_accessor :polled_at
 
@@ -48,7 +48,7 @@ module Localeapp
       Localeapp.log_with_time "poll success"
       @success = true
       Localeapp.updater.update(Localeapp.load_yaml(response))
-      write_synchronization_data!(current_time, Time.parse(response.headers[:date]))
+#      write_synchronization_data!(current_time, Time.parse(response.headers[:date]))
     end
 
     def handle_failure(response)

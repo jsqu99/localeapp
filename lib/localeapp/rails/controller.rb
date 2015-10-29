@@ -2,11 +2,14 @@ module Localeapp
   module Rails
     module Controller
       def self.included(base)
-        base.before_filter :handle_translation_updates
-        base.after_filter  :send_missing_translations
+        # base.before_filter :handle_translation_updates
+        # base.after_filter  :send_missing_translations
       end
 
       def handle_translation_updates
+        # don't do this...takes too fucking long!  every goddamn request
+        return true
+
         raise Localeapp::MissingApiKey unless ::Localeapp.configuration.has_api_key?
         unless ::Localeapp.configuration.polling_disabled?
           ::Localeapp.log_with_time 'Handling translation updates'
@@ -24,12 +27,12 @@ module Localeapp
           end
         end
       end
+    end
 
-      def send_missing_translations
-        return if ::Localeapp.configuration.sending_disabled?
-        ::Localeapp.missing_translations.reject_blacklisted
-        ::Localeapp.sender.post_missing_translations
-      end
+    def send_missing_translations
+      return if ::Localeapp.configuration.sending_disabled?
+      ::Localeapp.missing_translations.reject_blacklisted
+      ::Localeapp.sender.post_missing_translations
     end
   end
 end

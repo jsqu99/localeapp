@@ -17,6 +17,11 @@ module Localeapp
       def update_backend(response)
         @output.puts "Success!"
         @output.puts "Updating backend:"
+        # Jeff did this
+        @output.puts "received #{response}"
+        # make sure our callee gets the correctly formatted data
+        # this doesn't work...needs to have locales in an array, along w/ 'deleted', and 'translations'
+        # Localeapp.updater.update(Hash['locales',Localeapp.load_yaml(response)])
         Localeapp.updater.dump(Localeapp.load_yaml(response))
         @output.puts "Success!"
         Localeapp.poller.write_synchronization_data!(Time.now.to_i, Time.now.to_i)

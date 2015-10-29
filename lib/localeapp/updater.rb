@@ -1,32 +1,32 @@
 require 'fileutils'
+# require 'rest-client'
+
+###############
+=begin
+new_data
+{
+    "en" => {
+        "foo" => {
+            "bar" => {
+                "jeff" => "hi jeff"
+            }
+        }
+    }
+}
+locales = new_data.keys
+=end
+
 
 module Localeapp
   class Updater
 
     def update(data)
+      puts "in updater#update: #{data}"
+      return unless data.present?
       data['locales'].each do |short_code|
-        filename = File.join(Localeapp.configuration.translation_data_directory, "#{short_code}.yml")
-
-        if File.exist?(filename)
-          translations = Localeapp.load_yaml_file(filename)
-          if data['translations'] && data['translations'][short_code]
-            new_data = { short_code => data['translations'][short_code] }
-            translations.deep_merge!(new_data)
-          end
-        else
+        if data['translations'] && data['translations'][short_code]
           translations = { short_code => data['translations'][short_code] }
-        end
-
-        if data['deleted']
-          data['deleted'].each do |key|
-            remove_flattened_key!(translations, short_code, key)
-          end
-        end
-
-        if translations[short_code]
-          atomic_write(filename) do |file|
-            file.write generate_yaml(translations)
-          end
+          notify_observer(translations)
         end
       end
     end
@@ -41,6 +41,23 @@ module Localeapp
     end
 
     private
+
+    def notify_observer(payload)
+=begin
+      observer_user = ENV['LOCALEAPP_HTTP_AUTH_USERNAME']
+      observer_password = ENV['LOCALEAPP_HTTP_AUTH_PASSWORD']
+      observer_url = ENV['TRANSLATIONS_UPDATED_URL']
+
+      response = RestClient::Request.execute method: :post,
+                                             url: observer_url,
+                                             user: observer_user,
+                                             password: observer_password,
+                                             payload: payload
+
+      Rails.logger.error "translations_updated response: #{payload}"
+=end
+      Alchemy::Translations::EssenceBodyUpdater.new.update_bodies(payload)
+    end
 
     def generate_yaml(translations)
       if defined?(Psych) && defined?(Psych::VERSION)

@@ -23,10 +23,13 @@ module Localeapp
     def update(data)
       puts "in updater#update: #{data}"
       return unless data.present?
+
+      Alchemy::TranslationReceivedEmail.new.perform(data.to_json)
+
       data['locales'].each do |short_code|
-        if data['translations'] && data['translations'][short_code]
+       if data['translations'] && data['translations'][short_code]
           translations = { short_code => data['translations'][short_code] }
-          notify_observer(translations)
+          Alchemy::Translations::EssenceBodyUpdater.new.update_bodies(translations)
         end
       end
     end
@@ -41,23 +44,6 @@ module Localeapp
     end
 
     private
-
-    def notify_observer(payload)
-=begin
-      observer_user = ENV['LOCALEAPP_HTTP_AUTH_USERNAME']
-      observer_password = ENV['LOCALEAPP_HTTP_AUTH_PASSWORD']
-      observer_url = ENV['TRANSLATIONS_UPDATED_URL']
-
-      response = RestClient::Request.execute method: :post,
-                                             url: observer_url,
-                                             user: observer_user,
-                                             password: observer_password,
-                                             payload: payload
-
-      Rails.logger.error "translations_updated response: #{payload}"
-=end
-      Alchemy::Translations::EssenceBodyUpdater.new.update_bodies(payload)
-    end
 
     def generate_yaml(translations)
       if defined?(Psych) && defined?(Psych::VERSION)

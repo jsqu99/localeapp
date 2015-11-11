@@ -28,6 +28,7 @@ module Localeapp
 
       data['locales'].each do |short_code|
        if data['translations'] && data['translations'][short_code]
+          next if short_code == "en"
           translations = { short_code => data['translations'][short_code] }
           Alchemy::Translations::EssenceBodyUpdater.new.update_bodies(translations)
         end

@@ -48,7 +48,9 @@ module Localeapp
       Localeapp.log_with_time "poll success"
       @success = true
       Localeapp.updater.update(Localeapp.load_yaml(response))
-#      write_synchronization_data!(current_time, Time.parse(response.headers[:date]))
+      write_synchronization_data!(current_time, Time.parse(response.headers[:date]))
+      # Jeff added this below to make sure we update the updated_at since this line was in the controller code that we aren't' using now
+      ::Localeapp.poller.updated_at = ::Localeapp.poller.sync_data.updated_at
     end
 
     def handle_failure(response)

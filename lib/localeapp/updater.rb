@@ -24,8 +24,6 @@ module Localeapp
       puts "in updater#update: #{data}"
       return unless data.present?
 
-      Alchemy::TranslationReceivedEmail.new.perform(data.to_json)
-
       data['locales'].each do |short_code|
        if data['translations'] && data['translations'][short_code]
           next if short_code == "en"
@@ -33,6 +31,13 @@ module Localeapp
           Alchemy::Translations::EssenceBodyUpdater.new.update_bodies(translations)
         end
       end
+
+      # now prune English out of the data as we don't respect english changes in lcoaleapp
+      if data['translations'] && data['translations']['en']
+        data['translations'].delete('en')
+      end
+
+      Alchemy::TranslationReceivedEmail.new.perform(data.to_json) unless empty_translations?(data)
     end
 
     def dump(data)
@@ -45,6 +50,17 @@ module Localeapp
     end
 
     private
+
+
+    def empty_translations?(data)
+      return true unless data['translations']
+
+      data['translations'].each_value do |value|
+        return false if value.present?
+      end
+
+      return true
+    end
 
     def generate_yaml(translations)
       if defined?(Psych) && defined?(Psych::VERSION)
